@@ -1,6 +1,25 @@
 const config = window.SITE_CONFIG;
 const $ = (selector) => document.querySelector(selector);
 
+const platformIcons = {
+  instagram: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.7" r="1" class="fill"/></svg>`,
+  tiktok: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3v10.1a4.6 4.6 0 1 1-3.9-4.55v3.1a1.7 1.7 0 1 0 1 1.55V3h2.9Z"/><path d="M15 3c.45 2.5 1.9 4 4.5 4.35v3.05A7.7 7.7 0 0 1 15 8.7"/></svg>`,
+  youtube: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8.1a3 3 0 0 0-2.1-2.15C17.05 5.45 12 5.45 12 5.45s-5.05 0-6.9.5A3 3 0 0 0 3 8.1 31 31 0 0 0 2.5 12 31 31 0 0 0 3 15.9a3 3 0 0 0 2.1 2.15c1.85.5 6.9.5 6.9.5s5.05 0 6.9-.5A3 3 0 0 0 21 15.9a31 31 0 0 0 .5-3.9 31 31 0 0 0-.5-3.9Z"/><path d="m10 9 5 3-5 3Z" class="fill-bg"/></svg>`,
+  whatsapp: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.7a8.45 8.45 0 0 1-12.55 7.4L3.5 20.5l1.45-4.3A8.45 8.45 0 1 1 20.5 11.7Z"/><path d="M8.1 7.4c.2-.45.4-.45.75-.45h.55c.2 0 .4.05.5.4l.7 1.7c.1.3.05.45-.15.7l-.55.65c-.2.2-.2.4-.05.65.75 1.3 1.8 2.35 3.15 3 .25.1.45.1.65-.1l.8-.95c.2-.25.4-.25.7-.15l1.7.8c.3.15.35.3.3.6-.2 1.1-1.35 2-2.4 2.1-1 .1-2.2-.2-4.05-1.25-2.4-1.35-4-3.75-4.1-5.8-.05-.8.25-1.45.5-1.9Z"/></svg>`,
+  discord: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.9 5.35A16 16 0 0 0 15 4.1l-.5 1a13.8 13.8 0 0 0-5 0l-.55-1A16 16 0 0 0 5.1 5.35C2.65 9 2 12.55 2.3 16.05a15.7 15.7 0 0 0 4.8 2.45l1.15-1.6a10 10 0 0 1-1.8-.9l.45-.35a11.5 11.5 0 0 0 10.2 0l.45.35a10 10 0 0 1-1.8.9l1.15 1.6a15.7 15.7 0 0 0 4.8-2.45c.4-4.05-.7-7.55-2.8-10.7ZM8.6 14.25c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm6.8 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z"/></svg>`,
+  livepix: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2c4.9 0 8.8 3.2 8.8 7.3 0 2.45-1.4 4.65-3.65 6l.55 3.3-3.65-1.8c-.65.1-1.35.2-2.05.2-4.9 0-8.8-3.45-8.8-7.7S7.1 3.2 12 3.2Z"/><path d="m10.7 7.4 4.8 3.1-4.8 3.1Z" class="fill-bg"/></svg>`,
+  live: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M7.75 7.75a6 6 0 0 0 0 8.5M16.25 7.75a6 6 0 0 1 0 8.5M4.6 4.6a10.5 10.5 0 0 0 0 14.8M19.4 4.6a10.5 10.5 0 0 1 0 14.8"/></svg>`
+};
+
+function iconFor(item) {
+  const value = `${item.label || ""} ${item.title || ""}`.toLowerCase();
+  for (const name of ["instagram", "tiktok", "youtube", "whatsapp", "discord", "livepix"]) {
+    if (value.includes(name)) return platformIcons[name];
+  }
+  if (value.includes("live")) return platformIcons.live;
+  return item.icon;
+}
+
 function syncPageWidth() {
   document.documentElement.style.setProperty("--page-width", `${document.documentElement.clientWidth}px`);
 }
@@ -46,11 +65,11 @@ function render() {
   $("#livePixLink").href = config.pix.livePixUrl;
   $("#year").textContent = new Date().getFullYear();
 
-  $("#socialMini").innerHTML = config.socials.map(s => `<button class="social-pill" data-hub="${s.hub || ""}" data-url="${s.url}" aria-label="${s.label}"><b>${s.icon}</b><span>${s.label}</span></button>`).join("");
+  $("#socialMini").innerHTML = config.socials.map(s => `<button class="social-pill" data-hub="${s.hub || ""}" data-url="${s.url}" aria-label="${s.label}"><b>${iconFor(s)}</b><span>${s.label}</span></button>`).join("");
 
   $("#linkGrid").innerHTML = config.links.map(link => `
     <button class="link-card ${link.featured ? "featured" : ""}" data-hub="${link.hub || ""}" data-url="${link.url}">
-      <span class="link-icon">${link.icon}</span><span class="link-copy"><strong>${link.title}</strong><small>${link.subtitle}</small></span><span class="link-arrow">↗</span>
+      <span class="link-icon">${iconFor(link)}</span><span class="link-copy"><strong>${link.title}</strong><small>${link.subtitle}</small></span><span class="link-arrow">↗</span>
     </button>`).join("");
 
   const videoCards = config.videos.map((video, index) => `
