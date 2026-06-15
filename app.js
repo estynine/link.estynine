@@ -26,6 +26,17 @@ function syncPageWidth() {
 syncPageWidth();
 window.addEventListener("resize", syncPageWidth);
 
+function setView() {
+  const view = location.hash === "#eventos" ? "events" : "home";
+  document.body.dataset.view = view;
+  document.querySelectorAll(".main-nav a").forEach(link => {
+    link.classList.toggle("active", link.getAttribute("href") === (view === "events" ? "#eventos" : "#inicio"));
+  });
+  document.querySelectorAll(view === "events" ? ".events-section" : ".home-view").forEach(element => element.classList.add("visible"));
+  scrollTo({ top: 0, behavior: "smooth" });
+}
+window.addEventListener("hashchange", setView);
+
 function showToast(message) {
   const toast = $("#toast");
   toast.textContent = message;
@@ -108,6 +119,7 @@ function render() {
 }
 
 render();
+setView();
 
 document.querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", () => button.closest("dialog").close()));
 document.querySelectorAll("dialog").forEach(dialog => dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); }));
