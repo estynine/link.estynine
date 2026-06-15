@@ -1,6 +1,12 @@
 const config = window.SITE_CONFIG;
 const $ = (selector) => document.querySelector(selector);
 
+function syncPageWidth() {
+  document.documentElement.style.setProperty("--page-width", `${document.documentElement.clientWidth}px`);
+}
+syncPageWidth();
+window.addEventListener("resize", syncPageWidth);
+
 function showToast(message) {
   const toast = $("#toast");
   toast.textContent = message;
