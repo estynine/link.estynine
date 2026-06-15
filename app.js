@@ -9,6 +9,13 @@ function showToast(message) {
   showToast.timer = setTimeout(() => toast.classList.remove("show"), 2400);
 }
 
+function mediaMarkup(video) {
+  const watermark = `<span class="media-watermark"><b>E9</b> ESTYNINE</span>`;
+  if (video.media) return `<video src="${video.media}" poster="${video.thumbnail || ""}" muted loop playsinline preload="metadata"></video>${watermark}`;
+  if (video.thumbnail) return `<img src="${video.thumbnail}" alt="${video.title}" loading="lazy" onerror="this.remove()">${watermark}`;
+  return `${watermark}<b class="media-fallback">ESTY<br>NINE</b>`;
+}
+
 function openHub(key) {
   const hub = config.hubs[key];
   if (!hub) return;
@@ -40,7 +47,7 @@ function render() {
 
   const videoCards = config.videos.map((video, index) => `
     <button class="video-card" data-video="${index}" style="--accent:${video.accent}">
-      <span class="video-visual"><i class="play">▶</i><b>ESTY<br>NINE</b><em>0${index + 1}</em></span>
+      <span class="video-visual">${mediaMarkup(video)}<i class="play">▶</i><em>0${index + 1}</em></span>
       <span class="video-info"><small>${video.platform}</small><strong>${video.title}</strong><span>${video.meta} <b>↗</b></span></span>
     </button>`).join("");
   $("#videoTrack").innerHTML = videoCards + videoCards;
@@ -55,9 +62,11 @@ function render() {
     const video = config.videos[Number(card.dataset.video)];
     $("#modalPlatform").textContent = video.platform;
     $("#modalTitle").textContent = video.title;
-    $("#modalDescription").textContent = video.meta + ". Troque este conteúdo no arquivo site-config.js.";
+    $("#modalDescription").textContent = video.meta + ". Conteúdo oficial da Estynine.";
     $("#modalLink").href = video.url;
-    $("#modalMedia").innerHTML = `<span>ESTY<br>NINE</span><button aria-hidden="true">▶</button>`;
+    $("#modalMedia").innerHTML = `${mediaMarkup(video)}<button aria-hidden="true">▶</button>`;
+    const modalVideo = $("#modalMedia video");
+    if (modalVideo) modalVideo.play().catch(() => {});
     $("#videoModal").showModal();
   }));
 }
