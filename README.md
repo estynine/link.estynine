@@ -19,6 +19,12 @@ Quase todo o conteúdo fica em `site-config.js`:
 
 Edite `styles.css` para trocar cores, espaçamentos e efeitos. As cores principais ficam nas variáveis do começo do arquivo.
 
+### Colocar mídias reais nos destaques
+
+Em cada item de `videos`, use `thumbnail` para uma imagem ou `media` para um vídeo MP4. Arquivos próprios podem ficar em uma pasta `assets`, por exemplo `assets/corte-01.mp4`. A marca d'água **ESTYNINE** aparece automaticamente no canto superior esquerdo.
+
+Instagram e TikTok não permitem buscar todos os posts automaticamente apenas pelo endereço do perfil em um site estático. Para automação completa será necessário conectar as APIs oficiais; nesta versão, cadastre os arquivos ou URLs das mídias no `site-config.js`.
+
 > Antes de publicar, substitua todos os links com `#`, a chave Pix de exemplo e `profile.pageUrl` pelos dados reais.
 
 ## Publicar na Vercel
