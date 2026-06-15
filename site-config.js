@@ -3,6 +3,7 @@ window.SITE_CONFIG = {
     name: "Estynine",
     bio: "Live, conversa e momentos aleatórios. Chega junto, escolhe seu link e entra pra comunidade.",
     initials: "E9",
+    avatar: "assets/estynine-profile.jpg",
     pageUrl: "https://link-estynine.vercel.app"
   },
   pix: {
