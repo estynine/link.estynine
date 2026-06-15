@@ -15,16 +15,24 @@ Quase todo o conteúdo fica em `site-config.js`:
 - `pix`: chave Pix e endereço do LivePix;
 - `socials`: atalhos sociais do topo;
 - `links`: botões principais;
-- `videos`: cinco destaques do carrossel;
+- `featuredVideos`: cinco destaques do carrossel;
 - `hubs`: conteúdo das áreas internas de Instagram, TikTok e YouTube.
 
 Edite `styles.css` para trocar cores, espaçamentos e efeitos. As cores principais ficam nas variáveis do começo do arquivo.
 
 ### Colocar mídias reais nos destaques
 
-Em cada item de `videos`, use `thumbnail` para uma imagem ou `media` para um vídeo MP4. Arquivos próprios podem ficar em uma pasta `assets`, por exemplo `assets/corte-01.mp4`. A marca d'água **ESTYNINE** aparece automaticamente no canto superior esquerdo.
+Em cada item de `featuredVideos`, informe `provider`, `url`, `thumbnail`, `description` e `views`.
 
-Instagram e TikTok não permitem buscar todos os posts automaticamente apenas pelo endereço do perfil em um site estático. Para automação completa será necessário conectar as APIs oficiais; nesta versão, cadastre os arquivos ou URLs das mídias no `site-config.js`.
+Para YouTube, pode colar link normal do vídeo, Shorts ou `youtu.be`; o site extrai o ID e abre o player em iframe no modal.
+
+Para TikTok, pode colar o link do vídeo. O site tenta usar embed quando existe ID ou `embedUrl`, mas a plataforma pode bloquear. Nesse caso aparece um fallback bonito com botão para assistir no TikTok.
+
+Para Instagram/Reels, cole o link do post ou Reel. Quando o embed não for permitido, o site mostra fallback com botão para abrir no Instagram.
+
+Para garantir 100% que o vídeo toque dentro do site, use vídeo próprio `.mp4` hospedado em `/videos` ou em serviço externo como Cloudinary/S3. Link normal de TikTok/Instagram não deve ser colocado em `<video>`, porque normalmente é uma página e não um arquivo MP4. MP4 próprio é o método mais confiável para rodar dentro do site sem depender de embed externo.
+
+A marca d'água **ESTYNINE** aparece automaticamente no canto superior esquerdo dos cards do carrossel.
 
 > Antes de publicar, substitua todos os links com `#`, a chave Pix de exemplo e `profile.pageUrl` pelos dados reais.
 
