@@ -47,9 +47,69 @@ function showToast(message) {
 
 function mediaMarkup(video) {
   const watermark = `<span class="media-watermark"><b>E9</b> ESTYNINE</span>`;
-  if (video.media) return `<video src="${video.media}" poster="${video.thumbnail || ""}" muted loop playsinline preload="metadata"></video>${watermark}`;
+  if (video.media && String(video.media).toLowerCase().endsWith(".mp4")) return `<video src="${video.media}" poster="${video.thumbnail || ""}" muted loop playsinline preload="metadata"></video>${watermark}`;
   if (video.thumbnail) return `<img src="${video.thumbnail}" alt="${video.title}" loading="lazy" onerror="this.remove()">${watermark}`;
   return `${watermark}<b class="media-fallback">ESTY<br>NINE</b>`;
+}
+
+function escapeHtml(value = "") {
+  return String(value).replace(/[&<>"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[char]));
+}
+
+function videoProvider(video) {
+  return (video.provider || video.platform || "external").toLowerCase();
+}
+
+function youtubeId(url = "") {
+  try {
+    const parsed = new URL(url, location.origin);
+    if (parsed.hostname.includes("youtu.be")) return parsed.pathname.split("/").filter(Boolean)[0];
+    if (parsed.pathname.startsWith("/shorts/")) return parsed.pathname.split("/").filter(Boolean)[1];
+    if (parsed.searchParams.get("v")) return parsed.searchParams.get("v");
+    if (parsed.pathname.startsWith("/embed/")) return parsed.pathname.split("/").filter(Boolean)[1];
+  } catch {}
+  return "";
+}
+
+function tiktokEmbedUrl(video) {
+  if (video.embedUrl) return video.embedUrl;
+  const match = String(video.url || "").match(/\/video\/(\d+)/);
+  return match ? `https://www.tiktok.com/embed/v2/${match[1]}` : "";
+}
+
+function instagramEmbedUrl(video) {
+  if (video.embedUrl) return video.embedUrl;
+  const url = String(video.url || "").split("?")[0].replace(/\/$/, "");
+  return /instagram\.com\/(p|reel|tv)\//.test(url) ? `${url}/embed` : "";
+}
+
+function fallbackEmbed(video, label = "Abrir vídeo") {
+  return `<div class="embed-fallback">
+    ${video.thumbnail ? `<img src="${video.thumbnail}" alt="${escapeHtml(video.title)}" loading="lazy">` : `<span class="fallback-mark">ESTYNINE</span>`}
+    <div><h3>${escapeHtml(video.title)}</h3><p>${escapeHtml(video.description || video.views || "Este conteúdo abre fora do site.")}</p><a href="${video.url}" target="_blank" rel="noopener">${label} ↗</a></div>
+  </div>`;
+}
+
+function smartVideoEmbed(video) {
+  const provider = videoProvider(video);
+  if (provider === "youtube") {
+    const id = youtubeId(video.url);
+    if (!id) return fallbackEmbed(video, "Abrir no YouTube");
+    return `<div class="smart-embed ratio-16x9"><iframe src="https://www.youtube.com/embed/${id}" title="${escapeHtml(video.title)}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
+  }
+  if (provider === "mp4") {
+    if (!String(video.url || "").toLowerCase().includes(".mp4")) return fallbackEmbed(video, "Abrir vídeo");
+    return `<div class="smart-embed"><video controls playsinline preload="metadata" poster="${video.thumbnail || ""}"><source src="${video.url}" type="video/mp4">Seu navegador não conseguiu tocar este MP4.</video></div>`;
+  }
+  if (provider === "tiktok") {
+    const embed = tiktokEmbedUrl(video);
+    return embed ? `<div class="smart-embed vertical-embed"><iframe src="${embed}" title="${escapeHtml(video.title)}" loading="lazy" allow="encrypted-media; fullscreen" onerror="this.closest('.smart-embed').outerHTML = this.closest('.smart-embed').dataset.fallback" data-fallback='${escapeHtml(fallbackEmbed(video, "Assistir no TikTok"))}'></iframe></div><div class="embed-help"><a href="${video.url}" target="_blank" rel="noopener">Assistir no TikTok ↗</a></div>` : fallbackEmbed(video, "Assistir no TikTok");
+  }
+  if (provider === "instagram") {
+    const embed = instagramEmbedUrl(video);
+    return embed ? `<div class="smart-embed vertical-embed"><iframe src="${embed}" title="${escapeHtml(video.title)}" loading="lazy" allowtransparency="true" allowfullscreen onerror="this.closest('.smart-embed').outerHTML = this.closest('.smart-embed').dataset.fallback" data-fallback='${escapeHtml(fallbackEmbed(video, "Abrir no Instagram"))}'></iframe></div><div class="embed-help"><a href="${video.url}" target="_blank" rel="noopener">Abrir no Instagram ↗</a></div>` : fallbackEmbed(video, "Abrir no Instagram");
+  }
+  return fallbackEmbed(video, "Abrir conteúdo");
 }
 
 function openHub(key) {
@@ -92,10 +152,11 @@ function render() {
       <a href="${event.url}" target="_blank" rel="noopener">${event.cta} ↗</a>
     </article>`).join("");
 
-  const videoCards = config.videos.map((video, index) => `
+  const videos = config.featuredVideos || config.videos || [];
+  const videoCards = videos.map((video, index) => `
     <button class="video-card" data-video="${index}" style="--accent:${video.accent}">
       <span class="video-visual">${mediaMarkup(video)}<i class="play">▶</i><em>0${index + 1}</em></span>
-      <span class="video-info"><small>${video.platform}</small><strong>${video.title}</strong><span>${video.meta} <b>↗</b></span></span>
+      <span class="video-info"><small>${videoProvider(video).toUpperCase()}</small><strong>${video.title}</strong><span>${video.views || video.meta || "Destaque"} <b>↗</b></span></span>
     </button>`).join("");
   $("#videoTrack").innerHTML = videoCards + videoCards;
 
@@ -106,14 +167,12 @@ function render() {
   }));
 
   document.querySelectorAll("[data-video]").forEach(card => card.addEventListener("click", () => {
-    const video = config.videos[Number(card.dataset.video)];
-    $("#modalPlatform").textContent = video.platform;
+    const video = videos[Number(card.dataset.video)];
+    $("#modalPlatform").textContent = videoProvider(video).toUpperCase();
     $("#modalTitle").textContent = video.title;
-    $("#modalDescription").textContent = video.meta + ". Conteúdo oficial do Estynine.";
+    $("#modalDescription").textContent = video.description || `${video.views || "Destaque"}. Conteúdo oficial do Estynine.`;
     $("#modalLink").href = video.url;
-    $("#modalMedia").innerHTML = `${mediaMarkup(video)}<button aria-hidden="true">▶</button>`;
-    const modalVideo = $("#modalMedia video");
-    if (modalVideo) modalVideo.play().catch(() => {});
+    $("#modalMedia").innerHTML = smartVideoEmbed(video);
     $("#videoModal").showModal();
   }));
 }
@@ -121,8 +180,13 @@ function render() {
 render();
 setView();
 
-document.querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", () => button.closest("dialog").close()));
-document.querySelectorAll("dialog").forEach(dialog => dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); }));
+function closeDialog(dialog) {
+  dialog.close();
+  if (dialog.id === "videoModal") $("#modalMedia").innerHTML = "";
+}
+
+document.querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", () => closeDialog(button.closest("dialog"))));
+document.querySelectorAll("dialog").forEach(dialog => dialog.addEventListener("click", event => { if (event.target === dialog) closeDialog(dialog); }));
 
 $("#copyPix").addEventListener("click", async () => {
   try { await navigator.clipboard.writeText(config.pix.key); showToast("Pix copiado com sucesso"); }
