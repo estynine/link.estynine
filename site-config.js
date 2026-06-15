@@ -26,11 +26,12 @@ window.SITE_CONFIG = {
     { title: "Apoiar pelo LivePix", subtitle: "Fortaleça a live e apareça na tela", icon: "♡", url: "https://livepix.gg/estynine" }
   ],
   videos: [
-    { title: "Aquele momento que ninguém esperava", platform: "CORTE DA LIVE", meta: "Novo destaque", accent: "#ff304f", url: "#" },
-    { title: "Só quem estava na live vai entender", platform: "TIKTOK", meta: "Melhores momentos", accent: "#b80f2e", url: "https://tiktok.com/@estynine.ofc" },
-    { title: "Começou tranquila e terminou assim", platform: "SHORT", meta: "Clipe da semana", accent: "#ff6b35", url: "https://youtube.com/@estynine.oficial" },
-    { title: "A resenha mais aleatória da noite", platform: "REELS", meta: "Da comunidade", accent: "#e50046", url: "https://instagram.com/cauaxrlq" },
-    { title: "Quando o chat resolve participar", platform: "CORTE DA LIVE", meta: "Favorito do chat", accent: "#860016", url: "#" }
+    // Use thumbnail para imagem ou media para um arquivo de vídeo MP4.
+    { title: "Últimos cortes no TikTok", platform: "TIKTOK", meta: "@estynine.ofc", accent: "#ff304f", url: "https://tiktok.com/@estynine.ofc", thumbnail: "", media: "" },
+    { title: "Vídeos e Shorts oficiais", platform: "YOUTUBE", meta: "@estynine.oficial", accent: "#b80f2e", url: "https://youtube.com/@estynine.oficial", thumbnail: "", media: "" },
+    { title: "Fotos e bastidores", platform: "INSTAGRAM", meta: "@cauaxrlq", accent: "#ff6b35", url: "https://instagram.com/cauaxrlq", thumbnail: "", media: "" },
+    { title: "Momentos das próximas lives", platform: "LIVE", meta: "Em breve", accent: "#e50046", url: "https://youtube.com/@estynine.oficial", thumbnail: "", media: "" },
+    { title: "Conteúdo da comunidade", platform: "ESTYNINE", meta: "Novos destaques", accent: "#860016", url: "https://chat.whatsapp.com/F1xnqNfbOe4Gm0fWoXvMcv?mode=gi_t", thumbnail: "", media: "" }
   ],
   hubs: {
     instagram: { kicker: "BASTIDORES", title: "No ritmo da Esty", description: "Fotos, novidades e pedaços do dia a dia, reunidos aqui antes de você abrir o perfil.", official: "https://instagram.com/cauaxrlq", items: ["Dia de live", "Por trás das câmeras", "Novidade chegando", "Nosso cantinho"] },
