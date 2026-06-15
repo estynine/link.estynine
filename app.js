@@ -18,7 +18,7 @@ function openHub(key) {
   $("#hubOfficial").href = hub.official;
   $("#hubGrid").innerHTML = hub.items.map((item, index) => `
     <article class="hub-card" style="--delay:${index * 70}ms">
-      <span>${String(index + 1).padStart(2, "0")}</span><div class="hub-art"><i></i></div><h3>${item}</h3><p>Ver conteÃºdo <b>â†—</b></p>
+      <span>${String(index + 1).padStart(2, "0")}</span><div class="hub-art"><i></i></div><h3>${item}</h3><p>Ver conteúdo <b>↗</b></p>
     </article>`).join("");
   $("#hubModal").showModal();
 }
@@ -35,13 +35,13 @@ function render() {
 
   $("#linkGrid").innerHTML = config.links.map(link => `
     <button class="link-card ${link.featured ? "featured" : ""}" data-hub="${link.hub || ""}" data-url="${link.url}">
-      <span class="link-icon">${link.icon}</span><span class="link-copy"><strong>${link.title}</strong><small>${link.subtitle}</small></span><span class="link-arrow">â†—</span>
+      <span class="link-icon">${link.icon}</span><span class="link-copy"><strong>${link.title}</strong><small>${link.subtitle}</small></span><span class="link-arrow">↗</span>
     </button>`).join("");
 
   $("#videoTrack").innerHTML = config.videos.map((video, index) => `
     <button class="video-card" data-video="${index}" style="--accent:${video.accent}">
-      <span class="video-visual"><i class="play">â–¶</i><b>ESTY<br>NINE</b><em>0${index + 1}</em></span>
-      <span class="video-info"><small>${video.platform}</small><strong>${video.title}</strong><span>${video.meta} <b>â†—</b></span></span>
+      <span class="video-visual"><i class="play">▶</i><b>ESTY<br>NINE</b><em>0${index + 1}</em></span>
+      <span class="video-info"><small>${video.platform}</small><strong>${video.title}</strong><span>${video.meta} <b>↗</b></span></span>
     </button>`).join("");
 
   document.querySelectorAll("[data-hub]").forEach(button => button.addEventListener("click", () => {
@@ -54,9 +54,9 @@ function render() {
     const video = config.videos[Number(card.dataset.video)];
     $("#modalPlatform").textContent = video.platform;
     $("#modalTitle").textContent = video.title;
-    $("#modalDescription").textContent = video.meta + ". Troque este conteÃºdo no arquivo site-config.js.";
+    $("#modalDescription").textContent = video.meta + ". Troque este conteúdo no arquivo site-config.js.";
     $("#modalLink").href = video.url;
-    $("#modalMedia").innerHTML = `<span>ESTY<br>NINE</span><button aria-hidden="true">â–¶</button>`;
+    $("#modalMedia").innerHTML = `<span>ESTY<br>NINE</span><button aria-hidden="true">▶</button>`;
     $("#videoModal").showModal();
   }));
 }
@@ -83,11 +83,11 @@ let autoScroll = setInterval(() => { const atEnd = track.scrollLeft + track.clie
 track.addEventListener("pointerdown", () => clearInterval(autoScroll), { once: true });
 
 if (window.QRCode) new QRCode($("#qrCode"), { text: config.profile.pageUrl, width: 138, height: 138, colorDark: "#140608", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
-else $("#qrCode").textContent = "QR indisponÃ­vel offline";
+else $("#qrCode").textContent = "QR indisponível offline";
 
 $("#qrDownload").addEventListener("click", () => {
   const image = $("#qrCode img") || $("#qrCode canvas");
-  if (!image) return showToast("QR ainda estÃ¡ carregando");
+  if (!image) return showToast("QR ainda está carregando");
   const link = document.createElement("a");
   link.download = "qrcode-estynine.png";
   link.href = image.src || image.toDataURL("image/png");
