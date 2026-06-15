@@ -30,13 +30,12 @@ window.SITE_CONFIG = {
     { title: "Noite da Resenha", date: "Próxima live especial", time: "20:00 até 00:00", description: "Evento aberto para a comunidade colar junto, participar do chat e concorrer a destaque na live.", cta: "Quero me inscrever", url: "https://chat.whatsapp.com/F1xnqNfbOe4Gm0fWoXvMcv?mode=gi_t", featured: true },
     { title: "Cortes da Comunidade", date: "Em breve", time: "Horário avisado no grupo", description: "Envie ideias, momentos e cortes para aparecerem nos destaques do Estynine.", cta: "Entrar no grupo", url: "https://discord.gg/YK7FZuxTVD" }
   ],
-  videos: [
-    // Use thumbnail para imagem ou media para um arquivo de vídeo MP4.
-    { title: "Últimos cortes no TikTok", platform: "TIKTOK", meta: "@estynine.ofc", accent: "#ff304f", url: "https://tiktok.com/@estynine.ofc", thumbnail: "", media: "" },
-    { title: "Vídeos e Shorts oficiais", platform: "YOUTUBE", meta: "@estynine.oficial", accent: "#b80f2e", url: "https://youtube.com/@estynine.oficial", thumbnail: "", media: "" },
-    { title: "Fotos e bastidores", platform: "INSTAGRAM", meta: "@cauaxrlq", accent: "#ff6b35", url: "https://instagram.com/cauaxrlq", thumbnail: "", media: "" },
-    { title: "Momentos das próximas lives", platform: "LIVE", meta: "Em breve", accent: "#e50046", url: "https://youtube.com/@estynine.oficial", thumbnail: "", media: "" },
-    { title: "Conteúdo da comunidade", platform: "ESTYNINE", meta: "Novos destaques", accent: "#860016", url: "https://chat.whatsapp.com/F1xnqNfbOe4Gm0fWoXvMcv?mode=gi_t", thumbnail: "", media: "" }
+  featuredVideos: [
+    { id: "yt-1", title: "Melhor corte do canal", provider: "youtube", url: "https://www.youtube.com/shorts/dQw4w9WgXcQ", thumbnail: "", description: "Short oficial do canal. Troque pelo link real do seu vídeo.", views: "120K views", featured: true, accent: "#b80f2e" },
+    { id: "tk-1", title: "Corte viral do TikTok", provider: "tiktok", url: "https://www.tiktok.com/@estynine.ofc/video/COLOCAR_ID_AQUI", embedUrl: "", thumbnail: "", description: "Quando o TikTok bloquear embed, o site mostra botão para assistir fora.", views: "500K views", featured: true, accent: "#ff304f" },
+    { id: "ig-1", title: "Reels e bastidores", provider: "instagram", url: "https://instagram.com/cauaxrlq", embedUrl: "", thumbnail: "", description: "Cole aqui o link de um post ou Reel específico.", views: "Instagram", featured: true, accent: "#ff6b35" },
+    { id: "mp4-1", title: "Vídeo próprio hospedado", provider: "mp4", url: "/videos/video1.mp4", thumbnail: "", description: "MP4 próprio é o modo mais confiável para tocar dentro do site.", views: "Destaque", featured: true, accent: "#e50046" },
+    { id: "ext-1", title: "Conteúdo da comunidade", provider: "external", url: "https://chat.whatsapp.com/F1xnqNfbOe4Gm0fWoXvMcv?mode=gi_t", thumbnail: "", description: "Área externa da comunidade do Estynine.", views: "Novos destaques", featured: true, accent: "#860016" }
   ],
   hubs: {
     instagram: { kicker: "BASTIDORES", title: "No ritmo do Estynine", description: "Fotos, novidades e pedaços do dia a dia, reunidos aqui antes de você abrir o perfil.", official: "https://instagram.com/cauaxrlq", items: ["Dia de live", "Por trás das câmeras", "Novidade chegando", "Nosso cantinho"] },
