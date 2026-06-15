@@ -3,7 +3,7 @@ window.SITE_CONFIG = {
     name: "Estynine",
     bio: "Aqui a live vira resenha, os cortes viram história e quem cola uma vez já sabe o caminho. O streamer mais resenha do momento.",
     initials: "E9",
-    avatar: "assets/estynine-profile.jpg",
+    avatar: "assets/estynine-logo.jpg",
     pageUrl: "https://link-estynine.vercel.app"
   },
   pix: {
