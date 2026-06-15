@@ -64,7 +64,7 @@ function render() {
     const video = config.videos[Number(card.dataset.video)];
     $("#modalPlatform").textContent = video.platform;
     $("#modalTitle").textContent = video.title;
-    $("#modalDescription").textContent = video.meta + ". Conteúdo oficial da Estynine.";
+    $("#modalDescription").textContent = video.meta + ". Conteúdo oficial do Estynine.";
     $("#modalLink").href = video.url;
     $("#modalMedia").innerHTML = `${mediaMarkup(video)}<button aria-hidden="true">▶</button>`;
     const modalVideo = $("#modalMedia video");
@@ -84,7 +84,7 @@ $("#copyPix").addEventListener("click", async () => {
 });
 
 $("#shareButton").addEventListener("click", async () => {
-  const data = { title: "Estynine", text: "Vem conhecer a Estynine!", url: location.href };
+  const data = { title: "Estynine", text: "Vem conhecer o Estynine!", url: location.href };
   try { if (navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(location.href); showToast("Link copiado"); } } catch {}
 });
 
