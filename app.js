@@ -38,11 +38,12 @@ function render() {
       <span class="link-icon">${link.icon}</span><span class="link-copy"><strong>${link.title}</strong><small>${link.subtitle}</small></span><span class="link-arrow">↗</span>
     </button>`).join("");
 
-  $("#videoTrack").innerHTML = config.videos.map((video, index) => `
+  const videoCards = config.videos.map((video, index) => `
     <button class="video-card" data-video="${index}" style="--accent:${video.accent}">
       <span class="video-visual"><i class="play">▶</i><b>ESTY<br>NINE</b><em>0${index + 1}</em></span>
       <span class="video-info"><small>${video.platform}</small><strong>${video.title}</strong><span>${video.meta} <b>↗</b></span></span>
     </button>`).join("");
+  $("#videoTrack").innerHTML = videoCards + videoCards;
 
   document.querySelectorAll("[data-hub]").forEach(button => button.addEventListener("click", () => {
     if (button.dataset.hub) openHub(button.dataset.hub);
@@ -79,19 +80,44 @@ $("#shareButton").addEventListener("click", async () => {
 const track = $("#videoTrack");
 $("#prevVideo").addEventListener("click", () => track.scrollBy({ left: -300, behavior: "smooth" }));
 $("#nextVideo").addEventListener("click", () => track.scrollBy({ left: 300, behavior: "smooth" }));
-let autoScroll = setInterval(() => { const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 10; track.scrollTo({ left: atEnd ? 0 : track.scrollLeft + 292, behavior: "smooth" }); }, 4200);
-track.addEventListener("pointerdown", () => clearInterval(autoScroll), { once: true });
+let carouselPaused = false;
+let lastFrame = performance.now();
+let carouselPosition = track.scrollLeft;
+function moveCarousel(now) {
+  const elapsed = Math.min(now - lastFrame, 40);
+  lastFrame = now;
+  if (!carouselPaused && track.scrollWidth > track.clientWidth) {
+    carouselPosition += elapsed * 0.035;
+    const halfway = track.scrollWidth / 2;
+    if (carouselPosition >= halfway) carouselPosition -= halfway;
+    track.scrollLeft = carouselPosition;
+  }
+  requestAnimationFrame(moveCarousel);
+}
+track.addEventListener("pointerdown", () => { carouselPaused = true; });
+window.addEventListener("pointerup", () => { carouselPosition = track.scrollLeft; carouselPaused = false; lastFrame = performance.now(); });
+requestAnimationFrame(moveCarousel);
 
-if (window.QRCode) new QRCode($("#qrCode"), { text: config.profile.pageUrl, width: 138, height: 138, colorDark: "#140608", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
-else $("#qrCode").textContent = "QR indisponível offline";
+const logoSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" rx="30" fill="#b90025"/><text x="50" y="59" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-size="35" font-weight="800">E9</text></svg>`;
+let styledQr;
+if (window.QRCodeStyling) {
+  styledQr = new QRCodeStyling({
+    width: 168, height: 168, type: "canvas", data: config.profile.pageUrl,
+    image: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(logoSvg)}`,
+    margin: 8,
+    qrOptions: { errorCorrectionLevel: "H" },
+    imageOptions: { hideBackgroundDots: true, imageSize: 0.28, margin: 5, crossOrigin: "anonymous" },
+    dotsOptions: { type: "rounded", gradient: { type: "linear", rotation: 0.7, colorStops: [{ offset: 0, color: "#ff2148" }, { offset: 0.5, color: "#a90020" }, { offset: 1, color: "#32000a" }] } },
+    backgroundOptions: { color: "#fffafb" },
+    cornersSquareOptions: { type: "extra-rounded", color: "#760017" },
+    cornersDotOptions: { type: "dot", color: "#ff2148" }
+  });
+  styledQr.append($("#qrCode"));
+} else $("#qrCode").textContent = "QR indisponível offline";
 
 $("#qrDownload").addEventListener("click", () => {
-  const image = $("#qrCode img") || $("#qrCode canvas");
-  if (!image) return showToast("QR ainda está carregando");
-  const link = document.createElement("a");
-  link.download = "qrcode-estynine.png";
-  link.href = image.src || image.toDataURL("image/png");
-  link.click();
+  if (!styledQr) return showToast("QR ainda está carregando");
+  styledQr.download({ name: "qrcode-estynine-oficial", extension: "png" });
 });
 
 const observer = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add("visible"); }), { threshold: 0.12 });
