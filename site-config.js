@@ -1,7 +1,7 @@
 window.SITE_CONFIG = {
   profile: {
     name: "Estynine",
-    bio: "Live, conversa e momentos aleatórios. Chega junto, escolhe seu link e entra pra comunidade.",
+    bio: "Aqui a live vira resenha, os cortes viram história e quem cola uma vez já sabe o caminho. O streamer mais resenha do momento.",
     initials: "E9",
     avatar: "assets/estynine-profile.jpg",
     pageUrl: "https://link-estynine.vercel.app"
@@ -25,6 +25,10 @@ window.SITE_CONFIG = {
     { title: "Grupo no WhatsApp", subtitle: "Entre para receber avisos das lives", icon: "◌", url: "https://chat.whatsapp.com/F1xnqNfbOe4Gm0fWoXvMcv?mode=gi_t" },
     { title: "Comunidade no Discord", subtitle: "Conversa, avisos e resenha", icon: "◈", url: "https://discord.gg/YK7FZuxTVD" },
     { title: "Apoiar pelo LivePix", subtitle: "Fortaleça a live e apareça na tela", icon: "♡", url: "https://livepix.gg/estynine" }
+  ],
+  events: [
+    { title: "Noite da Resenha", date: "Próxima live especial", time: "20:00 até 00:00", description: "Evento aberto para a comunidade colar junto, participar do chat e concorrer a destaque na live.", cta: "Quero me inscrever", url: "https://chat.whatsapp.com/F1xnqNfbOe4Gm0fWoXvMcv?mode=gi_t", featured: true },
+    { title: "Cortes da Comunidade", date: "Em breve", time: "Horário avisado no grupo", description: "Envie ideias, momentos e cortes para aparecerem nos destaques do Estynine.", cta: "Entrar no grupo", url: "https://discord.gg/YK7FZuxTVD" }
   ],
   videos: [
     // Use thumbnail para imagem ou media para um arquivo de vídeo MP4.
