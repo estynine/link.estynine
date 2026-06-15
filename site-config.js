@@ -7,7 +7,7 @@ window.SITE_CONFIG = {
     pageUrl: "https://link-estynine.vercel.app"
   },
   pix: {
-    key: "COLOQUE-SUA-CHAVE-PIX-AQUI",
+    key: "dd744d16-c176-4094-89fa-bb2a9621c26e",
     livePixUrl: "https://livepix.gg/estynine"
   },
   socials: [
