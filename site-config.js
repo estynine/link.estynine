@@ -35,7 +35,7 @@ window.SITE_CONFIG = {
     { title: "Conteúdo da comunidade", platform: "ESTYNINE", meta: "Novos destaques", accent: "#860016", url: "https://chat.whatsapp.com/F1xnqNfbOe4Gm0fWoXvMcv?mode=gi_t", thumbnail: "", media: "" }
   ],
   hubs: {
-    instagram: { kicker: "BASTIDORES", title: "No ritmo da Esty", description: "Fotos, novidades e pedaços do dia a dia, reunidos aqui antes de você abrir o perfil.", official: "https://instagram.com/cauaxrlq", items: ["Dia de live", "Por trás das câmeras", "Novidade chegando", "Nosso cantinho"] },
+    instagram: { kicker: "BASTIDORES", title: "No ritmo do Estynine", description: "Fotos, novidades e pedaços do dia a dia, reunidos aqui antes de você abrir o perfil.", official: "https://instagram.com/cauaxrlq", items: ["Dia de live", "Por trás das câmeras", "Novidade chegando", "Nosso cantinho"] },
     tiktok: { kicker: "CORTES RÁPIDOS", title: "Momentos que viraram história", description: "Uma seleção de cortes curtos e cenas inesperadas das lives.", official: "https://tiktok.com/@estynine.ofc", items: ["O chat não perdoa", "Era pra ser sério", "Quase deu certo", "Melhor reação"] },
     youtube: { kicker: "PLAYLIST ESTYNINE", title: "Assiste no seu tempo", description: "Vídeos, shorts e compilações para quem perdeu a live ou quer rever.", official: "https://youtube.com/@estynine.oficial", items: ["Melhores da semana", "Cortes da madrugada", "Só momentos bons", "Especial da comunidade"] }
   }
