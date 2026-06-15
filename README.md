@@ -1,6 +1,6 @@
 # Estynine Links
 
-Central de links personalizada da streamer **Estynine**, pronta para publicar na Vercel. O projeto é estático, rápido e não exige instalação de dependências ou processo de build.
+Central de links personalizada do streamer **Estynine**, pronta para publicar na Vercel. O projeto é estático, rápido e não exige instalação de dependências ou processo de build.
 
 ## Rodar localmente
 
