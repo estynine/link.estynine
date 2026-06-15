@@ -18,24 +18,24 @@
 
   <main class="shell">
     <header class="profile reveal">
-      <nav class="topbar" aria-label="AÃ§Ãµes rÃ¡pidas">
+      <nav class="topbar" aria-label="Ações rápidas">
         <span class="brand-mark">E9</span>
-        <button class="icon-button" id="shareButton" aria-label="Compartilhar esta pÃ¡gina">
+        <button class="icon-button" id="shareButton" aria-label="Compartilhar esta página">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg>
         </button>
       </nav>
 
       <div class="avatar-wrap">
         <div class="avatar" id="avatar">E9</div>
-        <span class="live-dot"><i></i> AO VIVO Ã€S VEZES</span>
+        <span class="live-dot"><i></i> AO VIVO ÀS VEZES</span>
       </div>
-      <p class="eyebrow">STREAMER â€¢ CRIADORA</p>
-      <h1><span id="profileName">Estynine</span><b class="verified" title="Perfil oficial">âœ“</b></h1>
+      <p class="eyebrow">STREAMER • CRIADORA</p>
+      <h1><span id="profileName">Estynine</span><b class="verified" title="Perfil oficial">✓</b></h1>
       <p class="bio" id="profileBio"></p>
       <div class="schedule">
-        <span class="schedule-icon">â†—</span>
-        <div><small>HORÃRIO MAIS COMUM</small><strong>20:00 â€” 00:00</strong></div>
-        <span class="schedule-note">Pode comeÃ§ar Ã s 14h, 15h ou 17h</span>
+        <span class="schedule-icon">↗</span>
+        <div><small>HORÁRIO MAIS COMUM</small><strong>20:00 — 00:00</strong></div>
+        <span class="schedule-note">Pode começar às 14h, 15h ou 17h</span>
       </div>
       <div class="social-mini" id="socialMini"></div>
     </header>
@@ -43,7 +43,7 @@
     <section class="section reveal" aria-labelledby="featuredTitle">
       <div class="section-heading">
         <div><p class="eyebrow">RECENTES</p><h2 id="featuredTitle">Destaques da Esty</h2></div>
-        <div class="carousel-controls"><button id="prevVideo" aria-label="VÃ­deo anterior">â†</button><button id="nextVideo" aria-label="PrÃ³ximo vÃ­deo">â†’</button></div>
+        <div class="carousel-controls"><button id="prevVideo" aria-label="Vídeo anterior">←</button><button id="nextVideo" aria-label="Próximo vídeo">→</button></div>
       </div>
       <div class="video-track" id="videoTrack"></div>
     </section>
@@ -58,43 +58,43 @@
       <div class="support-copy">
         <span class="support-kicker">APOIE AS LIVES</span>
         <h2>Ajude essa comunidade a crescer.</h2>
-        <p>Seu apoio fortalece as lives e ajuda a trazer mais conteÃºdo. Qualquer valor jÃ¡ faz diferenÃ§a.</p>
+        <p>Seu apoio fortalece as lives e ajuda a trazer mais conteúdo. Qualquer valor já faz diferença.</p>
         <div class="support-actions">
           <button class="primary-button" id="copyPix">Copiar chave Pix</button>
-          <a class="ghost-button" id="livePixLink" href="#" target="_blank" rel="noopener">Abrir LivePix â†—</a>
+          <a class="ghost-button" id="livePixLink" href="#" target="_blank" rel="noopener">Abrir LivePix ↗</a>
         </div>
         <small class="pix-key" id="pixKey"></small>
       </div>
       <div class="qr-panel">
-        <div id="qrCode" aria-label="QR Code para esta pÃ¡gina"></div>
-        <span>APONTE A CÃ‚MERA</span>
+        <div id="qrCode" aria-label="QR Code para esta página"></div>
+        <span>APONTE A CÂMERA</span>
       </div>
     </section>
 
     <section class="manifesto reveal">
-      <span class="big-quote">â€œ</span>
-      <p>NÃ£o Ã© sÃ³ uma live.<br>Ã‰ o nosso cantinho na internet.</p>
-      <span class="signature">â€” Estynine</span>
+      <span class="big-quote">“</span>
+      <p>Não é só uma live.<br>É o nosso cantinho na internet.</p>
+      <span class="signature">— Estynine</span>
     </section>
 
     <footer>
       <span class="brand-mark">E9</span>
-      <p>Â© <span id="year"></span> Estynine. Todos os links oficiais em um sÃ³ lugar.</p>
+      <p>© <span id="year"></span> Estynine. Todos os links oficiais em um só lugar.</p>
       <button id="qrDownload">Baixar QR</button>
     </footer>
   </main>
 
   <dialog class="modal" id="videoModal">
-    <button class="modal-close" data-close aria-label="Fechar">Ã—</button>
+    <button class="modal-close" data-close aria-label="Fechar">×</button>
     <div class="modal-media" id="modalMedia"></div>
-    <div class="modal-copy"><span id="modalPlatform"></span><h2 id="modalTitle"></h2><p id="modalDescription"></p><a id="modalLink" target="_blank" rel="noopener">Assistir no perfil oficial â†—</a></div>
+    <div class="modal-copy"><span id="modalPlatform"></span><h2 id="modalTitle"></h2><p id="modalDescription"></p><a id="modalLink" target="_blank" rel="noopener">Assistir no perfil oficial ↗</a></div>
   </dialog>
 
   <dialog class="modal hub-modal" id="hubModal">
-    <button class="modal-close" data-close aria-label="Fechar">Ã—</button>
+    <button class="modal-close" data-close aria-label="Fechar">×</button>
     <div class="hub-head"><span id="hubKicker"></span><h2 id="hubTitle"></h2><p id="hubDescription"></p></div>
     <div class="hub-grid" id="hubGrid"></div>
-    <a class="primary-button hub-official" id="hubOfficial" target="_blank" rel="noopener">Abrir perfil oficial â†—</a>
+    <a class="primary-button hub-official" id="hubOfficial" target="_blank" rel="noopener">Abrir perfil oficial ↗</a>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
