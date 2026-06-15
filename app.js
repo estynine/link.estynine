@@ -33,7 +33,9 @@ function openHub(key) {
 function render() {
   $("#profileName").textContent = config.profile.name;
   $("#profileBio").textContent = config.profile.bio;
-  $("#avatar").textContent = config.profile.initials;
+  $("#avatar").innerHTML = config.profile.avatar
+    ? `<img src="${config.profile.avatar}" alt="Foto de ${config.profile.name}" onerror="this.remove();this.parentElement.textContent='${config.profile.initials}'">`
+    : config.profile.initials;
   $("#pixKey").textContent = config.pix.key;
   $("#livePixLink").href = config.pix.livePixUrl;
   $("#year").textContent = new Date().getFullYear();
