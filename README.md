@@ -11,6 +11,7 @@ Abra `index.html` no navegador ou use qualquer servidor estático, por exemplo a
 Quase todo o conteúdo fica em `site-config.js`:
 
 - `profile`: nome, bio, iniciais e endereço público do site;
+- `profile.avatar`: foto principal do perfil;
 - `pix`: chave Pix e endereço do LivePix;
 - `socials`: atalhos sociais do topo;
 - `links`: botões principais;
