@@ -34,10 +34,10 @@ Também funciona na Netlify arrastando a pasta do projeto para o painel ou conec
 ## Recursos
 
 - layout responsivo e acessível;
-- carrossel automático com controles e rolagem manual;
+- carrossel contínuo para a esquerda, com controles e rolagem manual;
 - modal de vídeo preparado para links reais;
 - hubs internos de conteúdo;
 - Pix com cópia e feedback visual;
-- QR Code válido com download em PNG;
+- QR Code personalizado com gradiente, módulos arredondados, selo E9, alta correção de erro e download em PNG;
 - compartilhamento nativo ou cópia do link;
 - animações com suporte a `prefers-reduced-motion`.
