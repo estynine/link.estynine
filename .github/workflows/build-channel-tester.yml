@@ -7,6 +7,12 @@ on:
     paths:
       - 'channel-tester/**'
       - '.github/workflows/build-channel-tester.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'channel-tester/**'
+      - '.github/workflows/build-channel-tester.yml'
   workflow_dispatch:
 
 jobs:
