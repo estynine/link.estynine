@@ -7,72 +7,35 @@ on:
     paths:
       - 'channel-tester/**'
       - '.github/workflows/build-channel-tester.yml'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'channel-tester/**'
-      - '.github/workflows/build-channel-tester.yml'
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: channel-tester
+    runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android platform
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.10.2'
-
-      - name: Build debug APK and capture log
+      - name: Clone, build and publish APK
         shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set +e
-          gradle :app:assembleDebug --stacktrace 2>&1 | tee build.log
-          code=${PIPESTATUS[0]}
-          echo "$code" > build-exit-code.txt
-          exit 0
-
-      - name: Upload build diagnostics
-        uses: actions/upload-artifact@v4
-        with:
-          name: channel-tester-build-log
-          path: |
-            channel-tester/build.log
-            channel-tester/build-exit-code.txt
-          if-no-files-found: error
-
-      - name: Upload APK when generated
-        uses: actions/upload-artifact@v4
-        with:
-          name: atlas-channel-tester-apk
-          path: channel-tester/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: ignore
-
-      - name: Mark failed build
-        shell: bash
-        run: |
-          code=$(cat build-exit-code.txt)
-          if [ "$code" != "0" ]; then
-            echo "Gradle build failed with exit code $code"
-            exit "$code"
-          fi
+          set -euxo pipefail
+          git clone --depth 1 --branch channel-tester-build \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" source
+          cd source/channel-tester
+          java -version
+          gradle --version
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+          gradle :app:assembleDebug --stacktrace
+          cd ..
+          mkdir -p channel-tester-output
+          cp channel-tester/app/build/outputs/apk/debug/app-debug.apk \
+            channel-tester-output/AtlasChannelTester.apk
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add channel-tester-output/AtlasChannelTester.apk
+          git commit -m "Build channel tester APK"
+          git push origin HEAD:channel-tester-build
