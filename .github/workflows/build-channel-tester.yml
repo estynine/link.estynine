@@ -1,0 +1,57 @@
+name: Build Channel Tester APK
+
+on:
+  push:
+    branches:
+      - channel-tester-build
+    paths:
+      - 'channel-tester/**'
+      - '.github/workflows/build-channel-tester.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Clone, build and publish APK
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euxo pipefail
+          git clone --depth 1 --branch channel-tester-build \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" source
+
+          if [ -f source/channel-tester-output/AtlasChannelTester.apk ]; then
+            echo "APK already exists; nothing to rebuild."
+            exit 0
+          fi
+
+          cd source/channel-tester
+          java -version
+          gradle --version
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+          gradle :app:assembleDebug --stacktrace
+
+          APK_PATH="app/build/outputs/apk/debug/app-debug.apk"
+          test -f "$APK_PATH"
+          APK_BASE64=$(base64 -w 0 "$APK_PATH")
+          cd ../..
+
+          jq -n \
+            --arg message "Build channel tester APK" \
+            --arg content "$APK_BASE64" \
+            --arg branch "channel-tester-build" \
+            '{message:$message, content:$content, branch:$branch}' > upload.json
+
+          curl --fail-with-body -L \
+            -X PUT \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/channel-tester-output/AtlasChannelTester.apk" \
+            --data-binary @upload.json
