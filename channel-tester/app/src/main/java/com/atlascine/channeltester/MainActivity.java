@@ -8,23 +8,32 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -45,13 +54,21 @@ public final class MainActivity extends Activity {
     private static final String SOURCE_PACKAGE = "go.geh";
     private static final String USER_AGENT = "Android Vinebre Software";
 
+    private static final int BG = Color.rgb(7, 9, 14);
+    private static final int PANEL = Color.rgb(18, 22, 31);
+    private static final int PANEL_2 = Color.rgb(25, 30, 42);
+    private static final int ACCENT = Color.rgb(56, 189, 248);
+    private static final int MUTED = Color.rgb(155, 164, 181);
+
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final List<Channel> channels = new ArrayList<>();
     private final List<String> rows = new ArrayList<>();
 
     private TextView status;
-    private Button fetchButton;
+    private Button refreshButton;
+    private Button exportButton;
     private Button diagnosticButton;
+    private ProgressBar progress;
     private ArrayAdapter<String> adapter;
     private String lastRequest = "";
     private String lastResponse = "";
@@ -60,6 +77,7 @@ public final class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         buildUi();
+        fetchChannels();
     }
 
     @Override
@@ -69,59 +87,81 @@ public final class MainActivity extends Activity {
     }
 
     private void buildUi() {
-        int pad = dp(14);
+        int pad = dp(16);
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(pad, pad, pad, pad);
-        root.setBackgroundColor(Color.rgb(16, 16, 16));
+        root.setBackgroundColor(BG);
+
+        LinearLayout header = new LinearLayout(this);
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(Gravity.CENTER_VERTICAL);
+
+        LinearLayout titleBox = new LinearLayout(this);
+        titleBox.setOrientation(LinearLayout.VERTICAL);
 
         TextView title = new TextView(this);
-        title.setText("Teste dos canais ao vivo");
+        title.setText("ATLAS LIVE PROBE");
         title.setTextColor(Color.WHITE);
         title.setTextSize(22);
-        title.setPadding(0, 0, 0, dp(8));
-        root.addView(title);
+        title.setTypeface(Typeface.DEFAULT_BOLD);
+        titleBox.addView(title);
 
-        TextView description = new TextView(this);
-        description.setText("Toque em Buscar. O app consulta a configuração e mostra somente transmissões ao vivo identificadas.");
-        description.setTextColor(Color.LTGRAY);
-        description.setTextSize(14);
-        description.setPadding(0, 0, 0, dp(12));
-        root.addView(description);
+        TextView subtitle = new TextView(this);
+        subtitle.setText("Leitor técnico de canais ao vivo");
+        subtitle.setTextColor(MUTED);
+        subtitle.setTextSize(13);
+        titleBox.addView(subtitle);
 
-        fetchButton = new Button(this);
-        fetchButton.setText("BUSCAR CANAIS");
-        fetchButton.setOnClickListener(v -> fetchChannels());
-        root.addView(fetchButton, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
+        header.addView(titleBox, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+
+        refreshButton = button("ATUALIZAR");
+        refreshButton.setOnClickListener(v -> fetchChannels());
+        header.addView(refreshButton);
+        root.addView(header);
 
         status = new TextView(this);
-        status.setText("Pronto para testar.");
-        status.setTextColor(Color.rgb(130, 200, 255));
+        status.setText("Preparando consulta…");
+        status.setTextColor(ACCENT);
         status.setTextSize(14);
         status.setTextIsSelectable(true);
-        status.setPadding(0, dp(10), 0, dp(10));
+        status.setPadding(0, dp(14), 0, dp(10));
         root.addView(status);
 
+        progress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        progress.setIndeterminate(true);
+        progress.setVisibility(View.GONE);
+        root.addView(progress, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(4)));
+
+        TextView tip = new TextView(this);
+        tip.setText("Toque em um canal para ver o link final, formato, headers e opções de cópia. Segure para copiar o link rapidamente.");
+        tip.setTextColor(MUTED);
+        tip.setTextSize(13);
+        tip.setPadding(0, dp(12), 0, dp(12));
+        root.addView(tip);
+
         ListView list = new ListView(this);
-        list.setBackgroundColor(Color.rgb(28, 28, 28));
+        list.setDividerHeight(dp(8));
+        list.setBackgroundColor(BG);
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, rows) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 TextView view = (TextView) super.getView(position, convertView, parent);
                 view.setTextColor(Color.WHITE);
                 view.setTextSize(16);
-                view.setPadding(dp(12), dp(14), dp(12), dp(14));
-                view.setBackgroundColor(Color.rgb(28, 28, 28));
+                view.setTypeface(Typeface.DEFAULT_BOLD);
+                view.setPadding(dp(16), dp(16), dp(16), dp(16));
+                view.setBackground(rounded(PANEL, 16));
                 return view;
             }
         };
         list.setAdapter(adapter);
         list.setOnItemClickListener((parent, view, position, id) -> showChannel(channels.get(position)));
         list.setOnItemLongClickListener((parent, view, position, id) -> {
-            copy(channels.get(position).url);
+            copy("Link do canal", channels.get(position).playbackUrl());
             return true;
         });
         root.addView(list, new LinearLayout.LayoutParams(
@@ -129,23 +169,47 @@ public final class MainActivity extends Activity {
                 0,
                 1f));
 
-        diagnosticButton = new Button(this);
-        diagnosticButton.setText("VER DIAGNÓSTICO");
+        LinearLayout actions = new LinearLayout(this);
+        actions.setOrientation(LinearLayout.HORIZONTAL);
+        actions.setPadding(0, dp(10), 0, 0);
+
+        exportButton = button("COPIAR JSON");
+        exportButton.setEnabled(false);
+        exportButton.setOnClickListener(v -> copyAllAsJson());
+        actions.addView(exportButton, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+
+        diagnosticButton = button("DIAGNÓSTICO");
         diagnosticButton.setEnabled(false);
         diagnosticButton.setOnClickListener(v -> showDiagnostic());
-        LinearLayout.LayoutParams diagnosticParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        diagnosticParams.setMargins(0, dp(8), 0, 0);
-        root.addView(diagnosticButton, diagnosticParams);
+        LinearLayout.LayoutParams diagParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        diagParams.setMargins(dp(8), 0, 0, 0);
+        actions.addView(diagnosticButton, diagParams);
 
+        root.addView(actions);
         setContentView(root);
     }
 
+    private Button button(String text) {
+        Button button = new Button(this);
+        button.setText(text);
+        button.setTextColor(Color.WHITE);
+        button.setTextSize(12);
+        button.setTypeface(Typeface.DEFAULT_BOLD);
+        button.setAllCaps(false);
+        button.setBackground(rounded(PANEL_2, 14));
+        return button;
+    }
+
+    private GradientDrawable rounded(int color, int radiusDp) {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setColor(color);
+        drawable.setCornerRadius(dp(radiusDp));
+        drawable.setStroke(dp(1), Color.rgb(42, 50, 68));
+        return drawable;
+    }
+
     private void fetchChannels() {
-        fetchButton.setEnabled(false);
-        diagnosticButton.setEnabled(false);
-        status.setText("Chamando o servidor…");
+        setLoading(true, "Consultando os canais autorizados…");
         channels.clear();
         rows.clear();
         adapter.notifyDataSetChanged();
@@ -153,34 +217,40 @@ public final class MainActivity extends Activity {
         executor.execute(() -> {
             try {
                 lastRequest = buildRequest();
-                HttpResult result = request(lastRequest);
+                HttpResult result = request(lastRequest, USER_AGENT, "");
                 lastResponse = result.body;
                 List<Channel> parsed = parseChannels(result.body);
 
                 runOnUiThread(() -> {
                     channels.addAll(parsed);
                     for (Channel channel : parsed) {
-                        rows.add(channel.title + "\n" + channel.kind());
+                        String host = channel.host();
+                        rows.add(channel.title + "\n" + channel.kind()
+                                + (host.isEmpty() ? "" : "  •  " + host));
                     }
                     adapter.notifyDataSetChanged();
-                    fetchButton.setEnabled(true);
+                    setLoading(false, parsed.isEmpty()
+                            ? "HTTP " + result.code + ": a resposta chegou, mas nenhum canal foi reconhecido."
+                            : parsed.size() + " canal(is) ao vivo encontrado(s). HTTP " + result.code + ".");
+                    exportButton.setEnabled(!parsed.isEmpty());
                     diagnosticButton.setEnabled(true);
-
-                    if (parsed.isEmpty()) {
-                        status.setText("HTTP " + result.code + ": resposta recebida, mas nenhum canal foi reconhecido. Abra o diagnóstico.");
-                    } else {
-                        status.setText(parsed.size() + " canal(is) encontrado(s). HTTP " + result.code + ".");
-                    }
                 });
             } catch (Exception error) {
-                lastResponse = "ERRO: " + error.getClass().getSimpleName() + "\n" + String.valueOf(error.getMessage());
+                lastResponse = "ERRO: " + error.getClass().getSimpleName()
+                        + "\n" + String.valueOf(error.getMessage());
                 runOnUiThread(() -> {
-                    fetchButton.setEnabled(true);
+                    setLoading(false, "Falha: " + error.getClass().getSimpleName()
+                            + " — " + String.valueOf(error.getMessage()));
                     diagnosticButton.setEnabled(true);
-                    status.setText("Falha: " + error.getClass().getSimpleName() + " — " + String.valueOf(error.getMessage()));
                 });
             }
         });
+    }
+
+    private void setLoading(boolean loading, String message) {
+        refreshButton.setEnabled(!loading);
+        progress.setVisibility(loading ? View.VISIBLE : View.GONE);
+        status.setText(message);
     }
 
     private String buildRequest() throws Exception {
@@ -207,21 +277,23 @@ public final class MainActivity extends Activity {
                 + "&recup_todo=1";
     }
 
-    private HttpResult request(String requestUrl) throws Exception {
+    private HttpResult request(String requestUrl, String userAgent, String rawHeaders) throws Exception {
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) new URL(requestUrl).openConnection();
             connection.setRequestMethod("GET");
+            connection.setInstanceFollowRedirects(true);
             connection.setConnectTimeout(20_000);
             connection.setReadTimeout(30_000);
-            connection.setRequestProperty("User-Agent", USER_AGENT);
-            connection.setRequestProperty("Accept", "text/plain, application/json, */*");
+            connection.setRequestProperty("User-Agent", emptyFallback(userAgent, USER_AGENT));
+            connection.setRequestProperty("Accept", "text/plain, application/json, application/vnd.apple.mpegurl, */*");
             connection.setRequestProperty("Accept-Language", Locale.getDefault().toLanguageTag());
+            applyHeaders(connection, rawHeaders);
 
             int code = connection.getResponseCode();
             InputStream input = code >= 400 ? connection.getErrorStream() : connection.getInputStream();
             if (input == null) {
-                return new HttpResult(code, "");
+                return new HttpResult(code, "", connection.getURL().toString());
             }
 
             StringBuilder body = new StringBuilder();
@@ -235,10 +307,35 @@ public final class MainActivity extends Activity {
                     }
                 }
             }
-            return new HttpResult(code, body.toString());
+            return new HttpResult(code, body.toString(), connection.getURL().toString());
         } finally {
             if (connection != null) {
                 connection.disconnect();
+            }
+        }
+    }
+
+    private void applyHeaders(HttpURLConnection connection, String rawHeaders) {
+        if (rawHeaders == null || rawHeaders.trim().isEmpty()) {
+            return;
+        }
+        String normalized = rawHeaders.replace("\\n", "\n").replace("||", "\n");
+        for (String piece : normalized.split("[\\n|;]+")) {
+            int separator = piece.indexOf(':');
+            if (separator <= 0) {
+                separator = piece.indexOf('=');
+            }
+            if (separator <= 0) {
+                continue;
+            }
+            String key = piece.substring(0, separator).trim();
+            String value = piece.substring(separator + 1).trim();
+            if (!key.isEmpty() && !value.isEmpty()) {
+                try {
+                    connection.setRequestProperty(key, value);
+                } catch (Exception ignored) {
+                    // Ignore malformed provider headers in the diagnostic app.
+                }
             }
         }
     }
@@ -258,23 +355,44 @@ public final class MainActivity extends Activity {
         LinkedHashMap<String, Channel> unique = new LinkedHashMap<>();
         for (String id : ids) {
             String title = first(values.get(id + "_tit"), "Canal " + id);
+            if (looksLikeCamera(title)) {
+                continue;
+            }
+
             String directUrl = decode(values.get(id + "_url"));
             String playlist = decode(values.get(id + "_pl"));
             String stream = first(values.get(id + "_stream"), "");
             String player = first(values.get(id + "_tp"), "");
+            String type = first(values.get(id + "_tipo"), "");
             String userAgent = decode(values.get(id + "_ua"));
             String headers = decode(values.get(id + "_h"));
+            String drmHeaders = decode(values.get(id + "_hd"));
+            String licenseUrl = decode(values.get(id + "_li"));
 
-            String url = extractUrl(directUrl);
-            if (url.isEmpty()) {
-                url = extractUrl(playlist);
-            }
-            if (url.isEmpty() || !isLive(stream, directUrl, playlist, url)) {
+            List<String> candidates = extractUrls(directUrl + "\n" + playlist);
+            String selected = chooseBestUrl(candidates);
+            if (selected.isEmpty() || !isLive(stream, directUrl, playlist, selected)) {
                 continue;
             }
 
-            Channel channel = new Channel(id, title, url, player, userAgent, headers);
-            unique.put(title.toLowerCase(Locale.ROOT) + "|" + url, channel);
+            String[] split = splitInlineOptions(selected);
+            Channel channel = new Channel(
+                    id,
+                    title,
+                    split[0],
+                    selected,
+                    candidates,
+                    directUrl,
+                    playlist,
+                    player,
+                    type,
+                    userAgent,
+                    headers,
+                    drmHeaders,
+                    licenseUrl,
+                    split[1]
+            );
+            unique.put(title.toLowerCase(Locale.ROOT) + "|" + channel.url, channel);
         }
         return new ArrayList<>(unique.values());
     }
@@ -310,6 +428,14 @@ public final class MainActivity extends Activity {
         }
     }
 
+    private boolean looksLikeCamera(String title) {
+        String lower = title.toLowerCase(Locale.ROOT);
+        return lower.contains("câmera")
+                || lower.contains("camera")
+                || lower.contains("webcam")
+                || lower.contains("monitoramento");
+    }
+
     private boolean isLive(String stream, String firstUrl, String secondUrl, String finalUrl) {
         String flag = stream.trim().toLowerCase(Locale.ROOT);
         if (flag.equals("1") || flag.equals("true") || flag.equals("yes") || flag.equals("sim")) {
@@ -319,6 +445,7 @@ public final class MainActivity extends Activity {
         return combined.contains(".m3u8")
                 || combined.contains(".m3u")
                 || combined.contains(".mpd")
+                || combined.contains(".ts")
                 || combined.contains("rtmp://")
                 || combined.contains("rtsp://")
                 || combined.contains("/live/")
@@ -329,59 +456,204 @@ public final class MainActivity extends Activity {
         if (value == null) {
             return "";
         }
-        return value
+        String decoded = value
                 .replace("@yy1111@", "https://")
                 .replace("@yy111@", "https://www.")
                 .replace("@yy11@", "http://")
                 .replace("@yy1@", "http://www.")
                 .replace("\\/", "/")
+                .replace("\\u0026", "&")
+                .replace("\\u003d", "=")
                 .replace("&amp;", "&")
                 .trim();
-    }
-
-    private String extractUrl(String source) {
-        if (source == null || source.trim().isEmpty()) {
-            return "";
-        }
-        Matcher matcher = Pattern.compile("(?i)(?:https?|rtmp|rtsp)://[^\\s\\\"'<>\\[\\]]+").matcher(source);
-        if (!matcher.find()) {
-            return "";
-        }
-        String value = matcher.group().trim();
-        while (!value.isEmpty()) {
-            char last = value.charAt(value.length() - 1);
-            if (last == ',' || last == ';' || last == ')' || last == '}' || last == ']') {
-                value = value.substring(0, value.length() - 1);
-            } else {
-                break;
+        if (!decoded.contains("://") && decoded.matches("(?i).*%3a%2f%2f.*")) {
+            try {
+                decoded = URLDecoder.decode(decoded, StandardCharsets.UTF_8.name());
+            } catch (Exception ignored) {
+                // Keep original if URL decoding fails.
             }
         }
-        return value;
+        return decoded;
+    }
+
+    private List<String> extractUrls(String source) {
+        LinkedHashSet<String> unique = new LinkedHashSet<>();
+        if (source == null || source.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        Matcher matcher = Pattern.compile("(?i)(?:https?|rtmp|rtsp)://[^\\s\\\"'<>\\[\\]]+").matcher(source);
+        while (matcher.find()) {
+            String value = matcher.group().trim();
+            while (!value.isEmpty()) {
+                char last = value.charAt(value.length() - 1);
+                if (last == ',' || last == ';' || last == ')' || last == '}' || last == ']') {
+                    value = value.substring(0, value.length() - 1);
+                } else {
+                    break;
+                }
+            }
+            if (!value.isEmpty()) {
+                unique.add(value);
+            }
+        }
+        return new ArrayList<>(unique);
+    }
+
+    private String chooseBestUrl(List<String> urls) {
+        if (urls.isEmpty()) {
+            return "";
+        }
+        for (String url : urls) {
+            String lower = url.toLowerCase(Locale.ROOT);
+            if (lower.contains(".m3u8") || lower.contains(".mpd")
+                    || lower.startsWith("rtmp://") || lower.startsWith("rtsp://")) {
+                return url;
+            }
+        }
+        for (String url : urls) {
+            String lower = url.toLowerCase(Locale.ROOT);
+            if (lower.contains(".m3u") || lower.contains(".ts") || lower.contains("/live/")) {
+                return url;
+            }
+        }
+        return urls.get(0);
+    }
+
+    private String[] splitInlineOptions(String value) {
+        int pipe = value.indexOf('|');
+        if (pipe <= 0) {
+            return new String[]{value, ""};
+        }
+        return new String[]{value.substring(0, pipe), value.substring(pipe + 1)};
     }
 
     private void showChannel(Channel channel) {
-        String details = "ID: " + channel.id
-                + "\nFormato: " + channel.kind()
-                + "\nPlayer: " + emptyFallback(channel.player, "—")
-                + "\nUser-Agent: " + emptyFallback(channel.userAgent, "—")
-                + "\nHeaders: " + emptyFallback(channel.headers, "—")
-                + "\n\nURL:\n" + channel.url;
+        ScrollView scroll = new ScrollView(this);
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setPadding(dp(16), dp(10), dp(16), dp(8));
+        scroll.addView(box);
+
+        addDetail(box, "FORMATO", channel.kind());
+        addDetail(box, "LINK FINAL", channel.playbackUrl());
+        addDetail(box, "LINK BRUTO", channel.rawSelectedUrl);
+        addDetail(box, "PLAYER", emptyFallback(channel.player, "—"));
+        addDetail(box, "TIPO", emptyFallback(channel.type, "—"));
+        addDetail(box, "USER-AGENT", emptyFallback(channel.userAgent, "—"));
+        addDetail(box, "HEADERS", emptyFallback(channel.headers, "—"));
+        addDetail(box, "OPÇÕES INLINE", emptyFallback(channel.inlineOptions, "—"));
+        addDetail(box, "DRM HEADERS", emptyFallback(channel.drmHeaders, "—"));
+        addDetail(box, "LICENÇA DRM", emptyFallback(channel.licenseUrl, "—"));
+
+        if (channel.candidates.size() > 1) {
+            addDetail(box, "OUTROS LINKS ENCONTRADOS", join(channel.candidates, "\n\n"));
+        }
+
+        Button resolve = button("TENTAR ENCONTRAR M3U8/HLS");
+        resolve.setOnClickListener(v -> resolveFinalStream(channel));
+        LinearLayout.LayoutParams resolveParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        resolveParams.setMargins(0, dp(12), 0, 0);
+        box.addView(resolve, resolveParams);
+
+        Button copyJson = button("COPIAR ESTE CANAL EM JSON");
+        copyJson.setOnClickListener(v -> copy("Canal em JSON", channel.toJson().toString()));
+        LinearLayout.LayoutParams jsonParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        jsonParams.setMargins(0, dp(8), 0, 0);
+        box.addView(copyJson, jsonParams);
 
         new AlertDialog.Builder(this)
                 .setTitle(channel.title)
-                .setMessage(details)
-                .setPositiveButton("ABRIR", (dialog, which) -> openChannel(channel.url))
-                .setNeutralButton("COPIAR URL", (dialog, which) -> copy(channel.url))
+                .setView(scroll)
+                .setPositiveButton("COPIAR LINK", (dialog, which) -> copy("Link do canal", channel.playbackUrl()))
+                .setNeutralButton("ABRIR", (dialog, which) -> openChannel(channel.playbackUrl()))
+                .setNegativeButton("FECHAR", null)
+                .show();
+    }
+
+    private void addDetail(LinearLayout box, String label, String value) {
+        TextView labelView = new TextView(this);
+        labelView.setText(label);
+        labelView.setTextColor(ACCENT);
+        labelView.setTextSize(12);
+        labelView.setTypeface(Typeface.DEFAULT_BOLD);
+        labelView.setPadding(0, dp(10), 0, dp(3));
+        box.addView(labelView);
+
+        TextView valueView = new TextView(this);
+        valueView.setText(value);
+        valueView.setTextColor(Color.DKGRAY);
+        valueView.setTextSize(14);
+        valueView.setTextIsSelectable(true);
+        valueView.setPadding(dp(10), dp(10), dp(10), dp(10));
+        valueView.setBackground(rounded(Color.rgb(235, 238, 244), 10));
+        box.addView(valueView, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+    }
+
+    private void resolveFinalStream(Channel channel) {
+        status.setText("Tentando resolver o link de “" + channel.title + "”…");
+        executor.execute(() -> {
+            try {
+                HttpResult result = request(channel.url, channel.userAgent, channel.headers);
+                List<String> found = extractUrls(result.body);
+                if (isDirectMedia(result.finalUrl)) {
+                    found.add(0, result.finalUrl);
+                }
+                String best = chooseBestUrl(found);
+                if (!best.isEmpty() && isDirectMedia(best)) {
+                    String[] split = splitInlineOptions(best);
+                    channel.resolvedUrl = split[0];
+                    runOnUiThread(() -> {
+                        status.setText("Link resolvido para “" + channel.title + "”: " + channel.kind());
+                        copy("Link resolvido", channel.playbackUrl());
+                        showResolved(channel, found, result.code);
+                    });
+                } else {
+                    runOnUiThread(() -> {
+                        status.setText("Não foi encontrado um link HLS/M3U8 direto nessa tentativa.");
+                        showResolved(channel, found, result.code);
+                    });
+                }
+            } catch (Exception error) {
+                runOnUiThread(() -> status.setText("Falha ao resolver: " + error.getMessage()));
+            }
+        });
+    }
+
+    private boolean isDirectMedia(String url) {
+        if (url == null) {
+            return false;
+        }
+        String lower = url.toLowerCase(Locale.ROOT);
+        return lower.contains(".m3u8") || lower.contains(".m3u")
+                || lower.contains(".mpd") || lower.contains(".ts")
+                || lower.startsWith("rtmp://") || lower.startsWith("rtsp://");
+    }
+
+    private void showResolved(Channel channel, List<String> found, int code) {
+        String text = "HTTP " + code
+                + "\n\nLINK ESCOLHIDO:\n" + channel.playbackUrl()
+                + "\n\nLINKS ENCONTRADOS:\n"
+                + (found.isEmpty() ? "Nenhum link de mídia direto encontrado." : join(found, "\n\n"));
+        TextView value = new TextView(this);
+        value.setText(text);
+        value.setTextIsSelectable(true);
+        value.setPadding(dp(16), dp(16), dp(16), dp(16));
+        new AlertDialog.Builder(this)
+                .setTitle("Resultado da resolução")
+                .setView(value)
+                .setPositiveButton("COPIAR", (dialog, which) -> copy("Resultado", text))
                 .setNegativeButton("FECHAR", null)
                 .show();
     }
 
     private void openChannel(String rawUrl) {
-        String url = rawUrl;
-        int pipe = url.indexOf('|');
-        if (pipe > 0) {
-            url = url.substring(0, pipe);
-        }
+        String url = splitInlineOptions(rawUrl)[0];
         try {
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(Uri.parse(url), "video/*");
@@ -395,24 +667,41 @@ public final class MainActivity extends Activity {
         }
     }
 
+    private void copyAllAsJson() {
+        JSONArray array = new JSONArray();
+        for (Channel channel : channels) {
+            array.put(channel.toJson());
+        }
+        JSONObject root = new JSONObject();
+        try {
+            root.put("provider", "authorized-live-provider");
+            root.put("generatedAt", System.currentTimeMillis());
+            root.put("count", channels.size());
+            root.put("channels", array);
+        } catch (Exception ignored) {
+            // JSONObject operations with valid values should not fail.
+        }
+        copy("Canais em JSON", root.toString());
+    }
+
     private void showDiagnostic() {
         TextView text = new TextView(this);
-        text.setText("REQUISIÇÃO\n" + lastRequest + "\n\nRESPOSTA\n" + lastResponse);
+        text.setText("REQUISIÇÃO\n" + lastRequest + "\n\nRESPOSTA BRUTA\n" + lastResponse);
         text.setTextIsSelectable(true);
         text.setPadding(dp(12), dp(12), dp(12), dp(12));
 
         new AlertDialog.Builder(this)
-                .setTitle("Diagnóstico")
+                .setTitle("Diagnóstico técnico")
                 .setView(text)
-                .setPositiveButton("COPIAR", (dialog, which) -> copy(text.getText().toString()))
+                .setPositiveButton("COPIAR", (dialog, which) -> copy("Diagnóstico", text.getText().toString()))
                 .setNegativeButton("FECHAR", null)
                 .show();
     }
 
-    private void copy(String value) {
+    private void copy(String label, String value) {
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         if (clipboard != null) {
-            clipboard.setPrimaryClip(ClipData.newPlainText("Canal", value));
+            clipboard.setPrimaryClip(ClipData.newPlainText(label, value));
             Toast.makeText(this, "Copiado.", Toast.LENGTH_SHORT).show();
         }
     }
@@ -429,6 +718,17 @@ public final class MainActivity extends Activity {
         return value == null || value.trim().isEmpty() ? fallback : value;
     }
 
+    private String join(List<String> values, String separator) {
+        StringBuilder out = new StringBuilder();
+        for (String value : values) {
+            if (out.length() > 0) {
+                out.append(separator);
+            }
+            out.append(value);
+        }
+        return out.toString();
+    }
+
     private int dp(int value) {
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
@@ -436,10 +736,12 @@ public final class MainActivity extends Activity {
     private static final class HttpResult {
         final int code;
         final String body;
+        final String finalUrl;
 
-        HttpResult(int code, String body) {
+        HttpResult(int code, String body, String finalUrl) {
             this.code = code;
             this.body = body;
+            this.finalUrl = finalUrl;
         }
     }
 
@@ -447,26 +749,101 @@ public final class MainActivity extends Activity {
         final String id;
         final String title;
         final String url;
+        final String rawSelectedUrl;
+        final List<String> candidates;
+        final String rawDirectUrl;
+        final String rawPlaylist;
         final String player;
+        final String type;
         final String userAgent;
         final String headers;
+        final String drmHeaders;
+        final String licenseUrl;
+        final String inlineOptions;
+        String resolvedUrl = "";
 
-        Channel(String id, String title, String url, String player, String userAgent, String headers) {
+        Channel(
+                String id,
+                String title,
+                String url,
+                String rawSelectedUrl,
+                List<String> candidates,
+                String rawDirectUrl,
+                String rawPlaylist,
+                String player,
+                String type,
+                String userAgent,
+                String headers,
+                String drmHeaders,
+                String licenseUrl,
+                String inlineOptions
+        ) {
             this.id = id;
             this.title = title;
             this.url = url;
+            this.rawSelectedUrl = rawSelectedUrl;
+            this.candidates = candidates;
+            this.rawDirectUrl = rawDirectUrl;
+            this.rawPlaylist = rawPlaylist;
             this.player = player;
+            this.type = type;
             this.userAgent = userAgent;
             this.headers = headers;
+            this.drmHeaders = drmHeaders;
+            this.licenseUrl = licenseUrl;
+            this.inlineOptions = inlineOptions;
+        }
+
+        String playbackUrl() {
+            return resolvedUrl.isEmpty() ? url : resolvedUrl;
         }
 
         String kind() {
-            String lower = url.toLowerCase(Locale.ROOT);
+            String lower = playbackUrl().toLowerCase(Locale.ROOT);
             if (lower.startsWith("rtmp://")) return "RTMP";
             if (lower.startsWith("rtsp://")) return "RTSP";
             if (lower.contains(".mpd")) return "DASH";
-            if (lower.contains(".m3u8") || lower.contains(".m3u")) return "HLS/M3U";
-            return "HTTP";
+            if (lower.contains(".m3u8")) return "HLS / M3U8";
+            if (lower.contains(".m3u")) return "M3U";
+            if (lower.contains(".ts")) return "MPEG-TS";
+            return "HTTP / WEB";
+        }
+
+        String host() {
+            try {
+                String host = Uri.parse(playbackUrl()).getHost();
+                return host == null ? "" : host;
+            } catch (Exception ignored) {
+                return "";
+            }
+        }
+
+        JSONObject toJson() {
+            JSONObject object = new JSONObject();
+            try {
+                object.put("id", id);
+                object.put("name", title);
+                object.put("streamType", kind());
+                object.put("url", playbackUrl());
+                object.put("rawUrl", rawSelectedUrl);
+                object.put("userAgent", userAgent);
+                object.put("headers", headers);
+                object.put("inlineOptions", inlineOptions);
+                object.put("player", player);
+                object.put("type", type);
+                object.put("drmHeaders", drmHeaders);
+                object.put("licenseUrl", licenseUrl);
+                object.put("rawDirectUrl", rawDirectUrl);
+                object.put("rawPlaylist", rawPlaylist);
+                JSONArray all = new JSONArray();
+                for (String candidate : candidates) {
+                    all.put(candidate);
+                }
+                object.put("candidates", all);
+            } catch (Exception ignored) {
+                // Keep the fields that were successfully written.
+            }
+            return object;
         }
     }
 }
