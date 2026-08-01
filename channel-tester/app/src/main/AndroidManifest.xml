@@ -4,8 +4,8 @@
 
     <application
         android:allowBackup="false"
-        android:label="Teste de Canais"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar"
+        android:label="Atlas Live Probe"
+        android:theme="@android:style/Theme.Material.NoActionBar"
         android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
