@@ -1,19 +1,20 @@
 name: Build Channel Tester APK
 
 on:
-  push:
-    branches:
-      - channel-tester-build
-    paths:
-      - 'channel-tester/**'
-      - '.github/workflows/build-channel-tester.yml'
   workflow_dispatch:
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: write
 
 jobs:
   build:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       github.event.comment.body == '/build-channel-apk')
     runs-on: ubuntu-24.04
 
     steps:
@@ -26,10 +27,7 @@ jobs:
           git clone --depth 1 --branch channel-tester-build \
             "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" source
 
-          if [ -f source/channel-tester-output/AtlasChannelTester.apk ]; then
-            echo "APK already exists; nothing to rebuild."
-            exit 0
-          fi
+          rm -f source/channel-tester-output/AtlasChannelTester.apk
 
           cd source/channel-tester
           java -version
@@ -43,7 +41,7 @@ jobs:
           cd ../..
 
           jq -n \
-            --arg message "Build channel tester APK" \
+            --arg message "Build clean live-channel APK" \
             --arg content "$APK_BASE64" \
             --arg branch "channel-tester-build" \
             '{message:$message, content:$content, branch:$branch}' > upload.json
